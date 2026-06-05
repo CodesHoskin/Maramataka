@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="mi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Maramataka">
+<title>Maramataka — Te Marama</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════
+   TOKENS
+════════════════════════════════════════ */
+:root{
+  --bg:#060a12; --card:#0d1520; --card2:#101824;
+  --border:rgba(255,255,255,0.10);
+  --white:#ffffff; --offwhite:#dce8f8; --dim:#7a98b8;
+  --gold:#deb96a; --gold-dim:rgba(222,185,106,0.15);
+  --blue:#6aaee0; --blue-dim:rgba(106,174,224,0.12);
+  --green:#76d49a; --purple:#b49ae0; --red:#e07878;
+  --radius:14px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;}
+body{
+  background:var(--bg); color:var(--white);
+  font-family:'Lato',sans-serif;
+  display:flex; flex-direction:column; align-items:center;
+  padding:0 0 5rem; position:relative; overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ════════════════════════════════════════
+   SPLASH SCREEN
+════════════════════════════════════════ */
+#splash{
+  position:fixed; inset:0; z-index:1000;
+  background:var(--bg);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:0;
+  transition:opacity 0.8s ease, transform 0.8s ease;
+}
+#splash.fade-out{opacity:0; transform:scale(1.04); pointer-events:none;}
+.splash-moon-wrap{
+  width:140px; height:140px; position:relative;
+  margin-bottom:2.5rem;
+}
+.splash-orbit{
+  position:absolute; inset:-16px; border-radius:50%;
+  border:1px solid rgba(222,185,106,0.2);
+  animation:spin 8s linear infinite;
+}
+.splash-orbit-dot{
+  position:absolute; top:-3px; left:50%; transform:translateX(-50%);
+  width:6px; height:6px; border-radius:50%;
+  background:var(--gold); box-shadow:0 0 10px var(--gold);
+}
+#splashCanvas{
+  width:100%; height:100%; border-radius:50%;
+  filter:drop-shadow(0 0 30px rgba(106,174,224,0.4));
+}
+.splash-title{
+  font-family:'Cinzel',serif; font-size:2rem; font-weight:600;
+  color:var(--white); letter-spacing:0.12em;
+  text-shadow:0 0 40px rgba(106,174,224,0.3);
+}
+.splash-sub{
+  font-family:'Cormorant Garamond',serif; font-style:italic;
+  font-size:1rem; color:var(--gold); opacity:0.85;
+  letter-spacing:0.1em; margin-top:0.4rem;
+}
+.splash-tagline{
+  font-size:0.78rem; color:var(--dim); letter-spacing:0.15em;
+  margin-top:2rem; text-align:center; line-height:1.8;
+}
+.splash-by{
+  font-size:0.68rem; color:var(--dim); opacity:0.5;
+  letter-spacing:0.12em; margin-top:3rem;
+  text-align:center;
+}
+.splash-by strong{color:var(--gold);opacity:0.8;}
+.splash-enter{
+  margin-top:2.5rem;
+  background:var(--gold-dim); border:1px solid rgba(222,185,106,0.35);
+  color:var(--gold); font-family:'Cinzel',serif;
+  font-size:0.72rem; letter-spacing:0.25em; text-transform:uppercase;
+  padding:0.75rem 2rem; border-radius:30px; cursor:pointer;
+  transition:all 0.2s; animation:pulse-btn 2.5s ease-in-out infinite;
+}
+.splash-enter:hover{background:rgba(222,185,106,0.25);}
+@keyframes pulse-btn{
+  0%,100%{box-shadow:0 0 0 0 rgba(222,185,106,0);}
+  50%{box-shadow:0 0 0 8px rgba(222,185,106,0.08);}
+}
+
+/* ════════════════════════════════════════
+   STARS
+════════════════════════════════════════ */
+.stars{position:fixed;inset:0;pointer-events:none;z-index:0;}
+.star{position:absolute;border-radius:50%;background:white;
+  animation:twinkle var(--d,3s) ease-in-out infinite var(--delay,0s);}
+@keyframes twinkle{0%,100%{opacity:var(--a1,.1);}50%{opacity:var(--a2,.7);}}
+
+/* ════════════════════════════════════════
+   TAB BAR
+════════════════════════════════════════ */
+.tabbar{
+  position:sticky; top:0; z-index:100;
+  width:100%; max-width:430px;
+  display:flex; background:rgba(6,10,18,0.96);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+}
+.tab{
+  flex:1; padding:1rem 0.5rem; text-align:center;
+  font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.22em;
+  text-transform:uppercase; color:var(--dim); cursor:pointer;
+  border-bottom:2px solid transparent; transition:all 0.2s;
+}
+.tab.active{color:var(--gold); border-bottom-color:var(--gold);}
+
+/* ════════════════════════════════════════
+   PAGES
+════════════════════════════════════════ */
+.page{
+  position:relative; z-index:1;
+  width:100%; max-width:430px;
+  display:none; flex-direction:column; align-items:center;
+  gap:1.3rem; padding:1.4rem 1rem 1rem;
+}
+.page.active{display:flex;}
+
+/* ════════════════════════════════════════
+   HEADER
+════════════════════════════════════════ */
+.app-header{text-align:center; padding-top:0.3rem;}
+.app-title{
+  font-family:'Cinzel',serif; font-size:1.05rem;
+  letter-spacing:0.32em; color:var(--gold); text-transform:uppercase;
+}
+.app-sub{
+  font-family:'Cormorant Garamond',serif; font-style:italic;
+  font-size:0.9rem; color:var(--dim); letter-spacing:0.1em; margin-top:0.3rem;
+}
+
+/* ════════════════════════════════════════
+   MOON
+════════════════════════════════════════ */
+.moon-wrap{
+  position:relative;
+  width:min(70vw,270px); height:min(70vw,270px);
+}
+#moonCanvas{
+  width:100%; height:100%; border-radius:50%;
+  filter:drop-shadow(0 0 28px rgba(106,174,224,0.35))
+         drop-shadow(0 0 70px rgba(106,174,224,0.1));
+}
+.orbit{
+  position:absolute; inset:-16px; border-radius:50%;
+  border:1px dashed rgba(222,185,106,0.12);
+  animation:spin 80s linear infinite;
+}
+.orbit-dot{
+  position:absolute; top:-3px; left:50%; transform:translateX(-50%);
+  width:6px; height:6px; border-radius:50%;
+  background:var(--gold); box-shadow:0 0 8px var(--gold); opacity:0.75;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ════════════════════════════════════════
+   CLOCK CARD
+════════════════════════════════════════ */
+.clock-card{
+  width:100%; background:var(--card);
+  border:1px solid var(--border); border-radius:var(--radius);
+  padding:1.5rem 1.6rem 1.3rem; text-align:center;
+}
+.time{
+  font-family:'Cinzel',serif;
+  font-size:clamp(3rem,15vw,4.6rem);
+  font-weight:600; color:var(--white);
+  letter-spacing:0.05em; line-height:1;
+  text-shadow:0 0 40px rgba(106,174,224,0.35);
+}
+.date{
+  font-family:'Cormorant Garamond',serif; font-style:italic;
+  font-size:1rem; color:var(--offwhite); opacity:0.7;
+  margin-top:0.5rem; letter-spacing:0.07em;
+}
+
+/* ════════════════════════════════════════
+   PHASE CARD
+════════════════════════════════════════ */
+.phase-card{
+  width:100%; background:var(--card);
+  border:1px solid var(--border); border-radius:var(--radius);
+  overflow:hidden;
+}
+.card-header{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0.75rem 1.4rem;
+  border-bottom:1px solid var(--border);
+}
+.card-header.gold{background:var(--gold-dim); border-bottom-color:rgba(222,185,106,0.2);}
+.card-header.blue{background:var(--blue-dim); border-bottom-color:rgba(106,174,224,0.18);}
+.card-header.purple{background:rgba(180,154,224,0.08); border-bottom-color:rgba(180,154,224,0.18);}
+.card-label{
+  font-family:'Cinzel',serif; font-size:0.6rem;
+  letter-spacing:0.28em; text-transform:uppercase;
+}
+.card-label.gold{color:var(--gold);}
+.card-label.blue{color:var(--blue);}
+.card-label.purple{color:var(--purple);}
+.card-right{font-size:0.76rem; color:var(--dim); white-space:nowrap;}
+.card-right a{color:var(--purple); text-decoration:none; opacity:0.8;}
+.card-right a:hover{opacity:1; text-decoration:underline;}
+
+.phase-body{padding:1.2rem 1.4rem 1.4rem; display:flex; flex-direction:column; gap:0.65rem;}
+.phase-name{
+  font-family:'Cinzel',serif;
+  font-size:clamp(1.55rem,6.5vw,2.1rem);
+  font-weight:700; color:var(--white); letter-spacing:0.04em; line-height:1.1;
+}
+.phase-num{font-size:0.82rem; color:var(--blue); letter-spacing:0.07em;}
+.divider{height:1px; background:rgba(255,255,255,0.07); margin:0.1rem 0;}
+.phase-meaning{font-size:0.97rem; color:var(--offwhite); line-height:1.6;}
+.phase-activity{
+  font-size:0.88rem; color:var(--green); line-height:1.5;
+  display:flex; gap:0.5rem; align-items:flex-start;
+}
+.phase-activity::before{content:'↝'; flex-shrink:0; opacity:0.65;}
+
+/* ════════════════════════════════════════
+   WAWATA CARD
+════════════════════════════════════════ */
+.wawata-body{padding:1.1rem 1.4rem 1.3rem; display:flex; flex-direction:column; gap:0.6rem;}
+.wawata-reflection{font-size:0.95rem; color:var(--offwhite); line-height:1.65;}
+.wawata-prompt{
+  font-size:0.86rem; color:var(--purple); line-height:1.5;
+  display:flex; gap:0.5rem; align-items:flex-start;
+  padding:0.6rem 0.8rem;
+  background:rgba(180,154,224,0.07); border-radius:8px;
+  border-left:2px solid rgba(180,154,224,0.3);
+}
+.wawata-prompt::before{content:'✦'; flex-shrink:0; font-size:0.65rem; margin-top:0.25rem; opacity:0.7;}
+.wawata-attr{
+  font-size:0.7rem; color:var(--dim); opacity:0.55;
+  font-style:italic; line-height:1.5;
+}
+.wawata-attr a{color:var(--purple); opacity:0.8;}
+
+/* ════════════════════════════════════════
+   CYCLE BAR
+════════════════════════════════════════ */
+.cycle-wrap{
+  width:100%; background:var(--card);
+  border:1px solid var(--border); border-radius:var(--radius);
+  padding:1rem 1.4rem;
+}
+.cycle-top{
+  display:flex; justify-content:space-between;
+  font-size:0.73rem; color:var(--dim); margin-bottom:0.75rem;
+}
+.cycle-top .cycle-pos{color:var(--offwhite); font-weight:700;}
+.cycle-track{height:5px; background:rgba(255,255,255,0.07); border-radius:3px; position:relative;}
+.cycle-fill{
+  height:100%; background:linear-gradient(90deg,var(--blue),var(--white));
+  border-radius:3px; transition:width 1s ease; position:relative;
+}
+.cycle-dot{
+  position:absolute; right:-5px; top:-3.5px;
+  width:12px; height:12px; border-radius:50%;
+  background:white; box-shadow:0 0 10px var(--blue), 0 0 3px white;
+}
+.cycle-labels{
+  display:flex; justify-content:space-between;
+  font-size:0.67rem; color:var(--dim); margin-top:0.5rem;
+}
+
+/* ════════════════════════════════════════
+   CALENDAR — MONTH NAV
+════════════════════════════════════════ */
+.month-nav{
+  width:100%; display:flex; align-items:center; justify-content:space-between;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--radius); padding:0.85rem 1.2rem;
+}
+.month-btn{
+  background:none; border:1px solid var(--border); color:var(--dim);
+  width:38px; height:38px; border-radius:10px; cursor:pointer;
+  font-size:1.1rem; display:flex; align-items:center; justify-content:center;
+  transition:all 0.15s;
+}
+.month-btn:hover{border-color:var(--gold); color:var(--gold);}
+.month-name{font-family:'Cinzel',serif; font-size:1.1rem; color:var(--white); text-align:center;}
+.month-maori{font-size:0.7rem; color:var(--gold); letter-spacing:0.13em; margin-top:0.2rem; text-align:center;}
+
+/* ════════════════════════════════════════
+   CALENDAR GRID
+════════════════════════════════════════ */
+.cal-card{
+  width:100%; background:var(--card);
+  border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;
+}
+.cal-dow{
+  display:grid; grid-template-columns:repeat(7,1fr);
+  border-bottom:1px solid var(--border);
+}
+.cal-dow-cell{
+  padding:0.55rem 0; text-align:center;
+  font-family:'Cinzel',serif; font-size:0.52rem;
+  letter-spacing:0.14em; text-transform:uppercase; color:var(--dim);
+}
+.cal-grid{display:grid; grid-template-columns:repeat(7,1fr);}
+.cal-cell{
+  aspect-ratio:1/1;
+  border-right:1px solid rgba(255,255,255,0.045);
+  border-bottom:1px solid rgba(255,255,255,0.045);
+  padding:0.28rem 0.18rem 0.2rem;
+  cursor:pointer; overflow:hidden;
+  display:flex; flex-direction:column; align-items:center; gap:0;
+  transition:background 0.14s; position:relative;
+}
+.cal-cell:hover{background:rgba(255,255,255,0.05);}
+.cal-cell.empty{cursor:default; background:rgba(0,0,0,0.18);}
+.cal-cell.today{background:rgba(106,174,224,0.11);}
+.cal-cell.today .cal-day-num{color:var(--blue); font-weight:700;}
+.cal-cell.selected{background:rgba(222,185,106,0.13); outline:1px solid rgba(222,185,106,0.35);}
+.cal-cell.new-moon .cal-day-num{color:var(--purple);}
+.cal-cell.full-moon .cal-day-num{color:var(--gold);}
+.cal-cell.new-moon .cal-glyph{filter:drop-shadow(0 0 3px rgba(180,154,224,0.7));}
+.cal-cell.full-moon .cal-glyph{filter:drop-shadow(0 0 4px rgba(222,185,106,0.9));}
+.cal-day-num{font-size:0.73rem; color:var(--offwhite); line-height:1.25; flex-shrink:0;}
+.cal-glyph{font-size:0.88rem; line-height:1; flex-shrink:0;}
+.cal-name{
+  font-size:0.4rem; color:var(--dim); text-align:center;
+  width:100%; overflow:hidden; white-space:nowrap;
+  text-overflow:ellipsis; padding:0 1px; flex-shrink:0; line-height:1.3;
+}
+.cal-dots{
+  display:flex; gap:2px; justify-content:center;
+  margin-top:auto; padding-bottom:2px; flex-wrap:wrap; max-height:8px; overflow:hidden;
+}
+.cal-dot{width:4px; height:4px; border-radius:50%; flex-shrink:0;}
+
+/* ════════════════════════════════════════
+   LEGEND
+════════════════════════════════════════ */
+.legend{
+  width:100%; display:flex; gap:1.2rem; flex-wrap:wrap;
+  justify-content:center; font-size:0.7rem; color:var(--dim);
+}
+.legend-item{display:flex; align-items:center; gap:0.35rem;}
+
+/* ════════════════════════════════════════
+   DAY DETAIL
+════════════════════════════════════════ */
+.day-detail{
+  width:100%; background:var(--card2);
+  border:1px solid rgba(106,174,224,0.18);
+  border-radius:var(--radius); overflow:hidden;
+}
+.day-detail-body{padding:1rem 1.4rem 0.8rem; display:flex; flex-direction:column; gap:0.5rem;}
+.detail-name{font-family:'Cinzel',serif; font-size:1.5rem; font-weight:700; color:var(--white);}
+.detail-eng{font-size:0.8rem; color:var(--blue); margin-top:0.1rem;}
+.detail-meaning{font-size:0.92rem; color:var(--offwhite); line-height:1.55; padding-top:0.45rem; border-top:1px solid rgba(255,255,255,0.07);}
+.detail-activity{font-size:0.84rem; color:var(--green); display:flex; gap:0.4rem;}
+.detail-activity::before{content:'↝'; opacity:0.65;}
+
+/* ── Appointments ── */
+.appt-section{padding:0.8rem 1.4rem 1.1rem; border-top:1px solid rgba(255,255,255,0.06);}
+.appt-header{display:flex; align-items:center; justify-content:space-between; margin-bottom:0.65rem;}
+.appt-title{font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.22em; text-transform:uppercase; color:var(--gold);}
+.btn-add{
+  background:var(--gold-dim); border:1px solid rgba(222,185,106,0.28);
+  color:var(--gold); font-size:0.73rem; padding:0.28rem 0.7rem;
+  border-radius:6px; cursor:pointer; transition:all 0.15s; letter-spacing:0.04em;
+}
+.btn-add:hover{background:rgba(222,185,106,0.22);}
+.appt-list{display:flex; flex-direction:column; gap:0.4rem;}
+.appt-item{
+  display:flex; align-items:flex-start; gap:0.6rem;
+  background:rgba(255,255,255,0.035); border:1px solid rgba(255,255,255,0.07);
+  border-radius:9px; padding:0.5rem 0.7rem;
+}
+.appt-bar{width:3px; border-radius:2px; flex-shrink:0; align-self:stretch; min-height:18px;}
+.appt-info{flex:1; min-width:0;}
+.appt-time-text{font-size:0.7rem; color:var(--gold); letter-spacing:0.04em;}
+.appt-name-text{font-size:0.87rem; color:var(--white); margin-top:0.08rem; word-break:break-word;}
+.appt-note-text{font-size:0.73rem; color:var(--dim); margin-top:0.12rem; line-height:1.4;}
+.appt-edit-btn{
+  background:none; border:none; cursor:pointer;
+  font-size:0.8rem; color:var(--dim); padding:0.2rem;
+  transition:color 0.14s; border-radius:4px; flex-shrink:0;
+}
+.appt-edit-btn:hover{color:var(--white);}
+.appt-empty{font-size:0.78rem; color:var(--dim); opacity:0.55; font-style:italic;}
+
+/* ════════════════════════════════════════
+   UPCOMING
+════════════════════════════════════════ */
+.upcoming-card{
+  width:100%; background:var(--card);
+  border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;
+}
+.upcoming-list{padding:0.4rem 0;}
+.upcoming-item{
+  display:flex; align-items:center; gap:1rem;
+  padding:0.65rem 1.4rem; border-bottom:1px solid rgba(255,255,255,0.05);
+  cursor:default;
+}
+.upcoming-item:last-child{border-bottom:none;}
+.upcoming-glyph{font-size:1.35rem; width:2rem; text-align:center; flex-shrink:0;}
+.upcoming-info{flex:1;}
+.upcoming-phase{font-family:'Cinzel',serif; font-size:0.82rem; color:var(--white); letter-spacing:0.04em;}
+.upcoming-date-text{font-size:0.7rem; color:var(--gold); margin-top:0.1rem;}
+.upcoming-away{font-size:0.76rem; color:var(--dim); white-space:nowrap; text-align:right;}
+.upcoming-item.is-new .upcoming-phase{color:var(--purple);}
+.upcoming-item.is-full .upcoming-phase{color:var(--gold);}
+
+/* ════════════════════════════════════════
+   MODAL
+════════════════════════════════════════ */
+.overlay{
+  position:fixed; inset:0; background:rgba(0,0,0,0.72);
+  z-index:500; display:flex; align-items:center; justify-content:center;
+  padding:1rem; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+}
+.overlay.hidden{display:none;}
+.modal{
+  background:#121d2c; border:1px solid var(--border);
+  border-radius:18px; width:100%; max-width:380px; overflow:hidden;
+  box-shadow:0 24px 64px rgba(0,0,0,0.55);
+}
+.modal-hd{
+  background:var(--gold-dim); border-bottom:1px solid rgba(222,185,106,0.2);
+  padding:1rem 1.4rem; display:flex; align-items:center; justify-content:space-between;
+}
+.modal-hd-title{font-family:'Cinzel',serif; font-size:0.78rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold);}
+.modal-close{background:none; border:none; color:var(--dim); font-size:1.1rem; cursor:pointer; padding:0.2rem; line-height:1;}
+.modal-close:hover{color:var(--white);}
+.modal-bd{padding:1.2rem 1.4rem; display:flex; flex-direction:column; gap:0.9rem;}
+.field label{display:block; font-size:0.68rem; letter-spacing:0.14em; text-transform:uppercase; color:var(--dim); margin-bottom:0.35rem;}
+.field input,.field textarea{
+  width:100%; background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.12); border-radius:9px;
+  color:var(--white); font-family:'Lato',sans-serif; font-size:0.9rem;
+  padding:0.6rem 0.8rem; outline:none; transition:border-color 0.15s;
+  -webkit-appearance:none;
+}
+.field input:focus,.field textarea:focus{border-color:var(--gold);}
+.field textarea{resize:vertical; min-height:58px;}
+.color-row{display:flex; gap:0.55rem; flex-wrap:wrap;}
+.swatch{
+  width:28px; height:28px; border-radius:50%; cursor:pointer;
+  border:2px solid transparent; transition:all 0.15s;
+}
+.swatch.on{border-color:white; transform:scale(1.18);}
+.modal-ft{
+  padding:0.8rem 1.4rem 1.2rem;
+  display:flex; gap:0.7rem; justify-content:flex-end;
+}
+.btn{
+  padding:0.55rem 1.2rem; border-radius:9px; font-size:0.84rem;
+  cursor:pointer; transition:all 0.15s; letter-spacing:0.03em;
+  font-family:'Lato',sans-serif; border:1px solid transparent;
+}
+.btn-cancel{background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.1); color:var(--dim);}
+.btn-cancel:hover{color:var(--white);}
+.btn-save{background:rgba(222,185,106,0.16); border-color:rgba(222,185,106,0.38); color:var(--gold);}
+.btn-save:hover{background:rgba(222,185,106,0.26);}
+.btn-del{background:rgba(224,120,120,0.1); border-color:rgba(224,120,120,0.28); color:var(--red); margin-right:auto;}
+.btn-del:hover{background:rgba(224,120,120,0.2);}
+
+/* ════════════════════════════════════════
+   ABOUT TAB
+════════════════════════════════════════ */
+.about-section{
+  width:100%; background:var(--card);
+  border:1px solid var(--border); border-radius:var(--radius);
+  overflow:hidden;
+}
+.about-hero{
+  background:linear-gradient(160deg,rgba(222,185,106,0.08),rgba(106,174,224,0.06));
+  padding:2rem 1.5rem 1.5rem; text-align:center;
+  border-bottom:1px solid var(--border);
+}
+.about-hero-moon{font-size:3.5rem; margin-bottom:0.8rem;}
+.about-hero-title{font-family:'Cinzel',serif; font-size:1.3rem; font-weight:700; color:var(--white); letter-spacing:0.06em;}
+.about-hero-sub{
+  font-family:'Cormorant Garamond',serif; font-style:italic;
+  font-size:0.95rem; color:var(--gold); margin-top:0.35rem; letter-spacing:0.08em;
+}
+.about-body{padding:1.2rem 1.5rem; display:flex; flex-direction:column; gap:1rem;}
+.about-para{font-size:0.92rem; color:var(--offwhite); line-height:1.7;}
+.about-feature-row{display:flex; flex-direction:column; gap:0.5rem;}
+.about-feature{
+  display:flex; gap:0.8rem; align-items:flex-start;
+  background:rgba(255,255,255,0.03); border-radius:9px; padding:0.7rem 0.9rem;
+}
+.about-feature-icon{font-size:1.2rem; flex-shrink:0; margin-top:0.05rem;}
+.about-feature-text{}
+.about-feature-title{font-size:0.85rem; color:var(--white); font-weight:700; margin-bottom:0.15rem;}
+.about-feature-desc{font-size:0.78rem; color:var(--dim); line-height:1.5;}
+.about-divider{height:1px; background:var(--border);}
+.about-wawata{
+  background:rgba(180,154,224,0.07); border:1px solid rgba(180,154,224,0.18);
+  border-radius:10px; padding:1rem 1.1rem;
+}
+.about-wawata-label{
+  font-family:'Cinzel',serif; font-size:0.6rem; letter-spacing:0.25em;
+  text-transform:uppercase; color:var(--purple); margin-bottom:0.4rem;
+}
+.about-wawata-text{font-size:0.85rem; color:var(--offwhite); line-height:1.65;}
+.about-wawata-link{
+  display:inline-block; margin-top:0.6rem;
+  font-size:0.78rem; color:var(--purple); text-decoration:none;
+}
+.about-wawata-link:hover{text-decoration:underline;}
+.about-version{
+  text-align:center; font-size:0.68rem; color:var(--dim);
+  opacity:0.45; padding-bottom:0.5rem;
+}
+</style>
+</head>
+<body>
+
+<!-- ════ SPLASH ════ -->
+<div id="splash">
+  <div class="splash-moon-wrap">
+    <div class="splash-orbit"><div class="splash-orbit-dot"></div></div>
+    <canvas id="splashCanvas" width="140" height="140"></canvas>
+  </div>
+  <div class="splash-title">Maramataka</div>
+  <div class="splash-sub">Te Marama · Moon Dreaming</div>
+  <div class="splash-tagline">
+    A living Māori lunar calendar<br>
+    guided by the faces of Hina
+  </div>
+  <button class="splash-enter" onclick="enterApp()">Tīmata · Begin</button>
+  <div class="splash-by">Inspired by <strong>Wawata — Moon Dreaming</strong><br>by Dr Hinemoa Elder</div>
+</div>
+
+<div class="stars" id="stars"></div>
+
+<!-- ════ TAB BAR ════ -->
+<div class="tabbar" id="tabbar" style="display:none;">
+  <div class="tab active" onclick="showTab('clock')">🌙 Clock</div>
+  <div class="tab" onclick="showTab('calendar')">📅 Calendar</div>
+  <div class="tab" onclick="showTab('about')">ℹ About</div>
+</div>
+
+<!-- ════ CLOCK PAGE ════ -->
+<div class="page active" id="page-clock">
+  <div class="app-header">
+    <div class="app-title">Maramataka</div>
+    <div class="app-sub">Te Marama · The Moon Calendar</div>
+  </div>
+  <div class="moon-wrap">
+    <div class="orbit"><div class="orbit-dot"></div></div>
+    <canvas id="moonCanvas" width="270" height="270"></canvas>
+  </div>
+  <div class="clock-card">
+    <div class="time" id="timeDisplay">--:--:--</div>
+    <div class="date" id="dateDisplay">—</div>
+  </div>
+  <div class="phase-card">
+    <div class="card-header gold">
+      <div class="card-label gold">Te Ingoa o Te Pō</div>
+      <div class="card-right" id="phaseEng">—</div>
+    </div>
+    <div class="phase-body">
+      <div>
+        <div class="phase-name" id="phaseName">—</div>
+        <div class="phase-num" id="phaseNum">—</div>
+      </div>
+      <div class="divider"></div>
+      <div class="phase-meaning" id="phaseMeaning">—</div>
+      <div class="phase-activity" id="phaseActivity">—</div>
+    </div>
+  </div>
+  <div class="phase-card">
+    <div class="card-header purple">
+      <div class="card-label purple">Wawata · Moon Dreaming</div>
+      <div class="card-right"><a href="https://www.penguin.co.nz/books/wawata-moon-dreaming-9780143777595" target="_blank">Dr Hinemoa Elder ↗</a></div>
+    </div>
+    <div class="wawata-body">
+      <div class="wawata-reflection" id="wawataRef">—</div>
+      <div class="wawata-prompt" id="wawataPrompt">—</div>
+      <div class="wawata-attr">
+        Inspired by <em>Wawata — Moon Dreaming</em> by Dr Hinemoa Elder (Penguin, 2022).
+        <a href="https://www.penguin.co.nz/books/wawata-moon-dreaming-9780143777595" target="_blank">Read the book ↗</a>
+      </div>
+    </div>
+  </div>
+  <div class="cycle-wrap">
+    <div class="cycle-top">
+      <span class="cycle-pos" id="cyclePos">Pō 1</span>
+      <span>29-night lunar cycle</span>
+    </div>
+    <div class="cycle-track">
+      <div class="cycle-fill" id="cycleFill" style="width:0%">
+        <div class="cycle-dot"></div>
+      </div>
+    </div>
+    <div class="cycle-labels">
+      <span>🌑 Whiro</span>
+      <span>Rākaunui 🌕</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════ CALENDAR PAGE ════ -->
+<div class="page" id="page-calendar">
+  <div class="month-nav">
+    <button class="month-btn" onclick="changeMonth(-1)">‹</button>
+    <div>
+      <div class="month-name" id="calMonth">—</div>
+      <div class="month-maori" id="calMonthMaori">—</div>
+    </div>
+    <button class="month-btn" onclick="changeMonth(1)">›</button>
+  </div>
+  <div class="cal-card">
+    <div class="cal-dow">
+      <div class="cal-dow-cell">Sun</div><div class="cal-dow-cell">Mon</div>
+      <div class="cal-dow-cell">Tue</div><div class="cal-dow-cell">Wed</div>
+      <div class="cal-dow-cell">Thu</div><div class="cal-dow-cell">Fri</div>
+      <div class="cal-dow-cell">Sat</div>
+    </div>
+    <div class="cal-grid" id="calGrid"></div>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><span>🌑</span> Whiro · New moon</div>
+    <div class="legend-item"><span>🌕</span> Rākaunui · Full moon</div>
+    <div class="legend-item" style="color:var(--blue)">■ Today</div>
+  </div>
+  <div class="day-detail" id="dayDetail" style="display:none;">
+    <div class="card-header blue">
+      <div class="card-label blue">Te Pō Tūāhuru</div>
+      <div class="card-right" id="detailDateLabel">—</div>
+    </div>
+    <div class="day-detail-body">
+      <div>
+        <div class="detail-name" id="detailName">—</div>
+        <div class="detail-eng" id="detailEng">—</div>
+      </div>
+      <div class="detail-meaning" id="detailMeaning">—</div>
+      <div class="detail-activity" id="detailActivity">—</div>
+    </div>
+    <div class="appt-section">
+      <div class="appt-header">
+        <div class="appt-title">Appointments</div>
+        <button class="btn-add" onclick="openModal()">+ Add</button>
+      </div>
+      <div class="appt-list" id="apptList"></div>
+    </div>
+  </div>
+  <div class="upcoming-card">
+    <div class="card-header purple">
+      <div class="card-label purple">Ngā Pō Whakahirahira · Upcoming Key Phases</div>
+    </div>
+    <div class="upcoming-list" id="upcomingList"></div>
+  </div>
+</div>
+
+<!-- ════ ABOUT PAGE ════ -->
+<div class="page" id="page-about">
+  <div class="about-section">
+    <div class="about-hero">
+      <div class="about-hero-moon">🌙</div>
+      <div class="about-hero-title">Maramataka</div>
+      <div class="about-hero-sub">Te Marama · Moon Dreaming</div>
+    </div>
+    <div class="about-body">
+      <div class="about-para">
+        Maramataka is a living Māori lunar calendar — a daily companion guided by the ancient wisdom of the moon. Each of the 29 nights carries a name, a meaning, and an invitation to reflect.
+      </div>
+      <div class="about-feature-row">
+        <div class="about-feature">
+          <div class="about-feature-icon">🌕</div>
+          <div class="about-feature-text">
+            <div class="about-feature-title">Live Moon Clock</div>
+            <div class="about-feature-desc">Real-time clock showing tonight's lunar phase, drawn accurately to the sky above you.</div>
+          </div>
+        </div>
+        <div class="about-feature">
+          <div class="about-feature-icon">📅</div>
+          <div class="about-feature-text">
+            <div class="about-feature-title">Maramataka Calendar</div>
+            <div class="about-feature-desc">Monthly view with Māori phase names for every day. Tap any day to see its guidance and add appointments.</div>
+          </div>
+        </div>
+        <div class="about-feature">
+          <div class="about-feature-icon">✦</div>
+          <div class="about-feature-text">
+            <div class="about-feature-title">Wawata Reflections</div>
+            <div class="about-feature-desc">Each phase carries a wellbeing reflection and a personal question, inspired by the maramataka tradition.</div>
+          </div>
+        </div>
+        <div class="about-feature">
+          <div class="about-feature-icon">🗓</div>
+          <div class="about-feature-text">
+            <div class="about-feature-title">Appointments</div>
+            <div class="about-feature-desc">Add and save appointments to any day, colour-coded and stored on your device.</div>
+          </div>
+        </div>
+      </div>
+      <div class="about-divider"></div>
+      <div class="about-wawata">
+        <div class="about-wawata-label">Wawata — Moon Dreaming</div>
+        <div class="about-wawata-text">
+          The reflections in this app are inspired by the maramataka wellbeing tradition as brought to life by Dr Hinemoa Elder in her book <em>Wawata — Moon Dreaming</em> (Penguin NZ, 2022). Dr Elder is of Te Aupōuri, Ngāti Kurī, Te Rarawa, Ngāi Takoto and Ngāpuhi nui tonu.
+        </div>
+        <a class="about-wawata-link" href="https://www.penguin.co.nz/books/wawata-moon-dreaming-9780143777595" target="_blank">Read Wawata — Moon Dreaming ↗</a>
+      </div>
+      <div class="about-divider"></div>
+      <div class="about-version">Maramataka Demo v1.0 · Built with aroha</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ MODAL ════ -->
+<div class="overlay hidden" id="overlay">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-hd-title" id="modalTitle">Add Appointment</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-bd">
+      <div class="field">
+        <label>Title</label>
+        <input type="text" id="mTitle" placeholder="Appointment title…">
+      </div>
+      <div class="field">
+        <label>Time (optional)</label>
+        <input type="time" id="mTime">
+      </div>
+      <div class="field">
+        <label>Notes (optional)</label>
+        <textarea id="mNotes" placeholder="Any notes…"></textarea>
+      </div>
+      <div class="field">
+        <label>Colour</label>
+        <div class="color-row" id="colorRow"></div>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn btn-del" id="btnDel" style="display:none" onclick="deleteAppt()">Delete</button>
+      <button class="btn btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-save" onclick="saveAppt()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// PHASE DATA
+// ═══════════════════════════════════════════════════════
+const PHASES=[
+  {name:"Whiro",eng:"New Moon",meaning:"Night of the new moon — hidden, resting",activity:"Rest and reflection; do not plant or fish",wawata:"Whiro is darkness and deep potential. Like a seed in soil, nothing is visible yet — but everything is possible. This is a night to go inward.",prompt:"What fear or old pattern are you ready to release as this new cycle begins?"},
+  {name:"Tirea",eng:"Waxing Crescent",meaning:"The first sliver of light appears after darkness",activity:"Tend to your body; gentle movement and nourishment",wawata:"The first light returns. Tirea invites you to notice your body — how it feels, what it needs. A good night to check in with yourself physically.",prompt:"How is your body feeling right now? What is it asking of you?"},
+  {name:"Hoata",eng:"Waxing Crescent",meaning:"The gleam — light flashes across the darkness",activity:"Good for planting and gentle fishing",wawata:"Hoata brings a flash of clarity. Insight can come quickly tonight — pay attention to what arrives in your mind unbidden.",prompt:"What new idea or feeling has been trying to get your attention lately?"},
+  {name:"Ōuenuku",eng:"Waxing Crescent",meaning:"The arc of light grows, energy stirs",activity:"Begin preparing soil; light planting",wawata:"The rainbow arc of Uenuku glows in the growing light. This phase speaks to connection — the bridges we build between ourselves and others.",prompt:"Which relationship in your life would benefit from more attention right now?"},
+  {name:"Okoro",eng:"Waxing Crescent",meaning:"Light increases — a time of growth beginning",activity:"Plant crops that grow above ground",wawata:"Okoro is rooted in the moon dial of home — our origins and the truths we stand on. A night to reflect on where you come from and what grounds you.",prompt:"What are the foundations — people, places, values — that hold you steady?"},
+  {name:"Tamatea-ā-hotu",eng:"First Quarter",meaning:"Tamatea stirs with feeling — emotional tides run high",activity:"Be gentle; avoid conflict and risky decisions",wawata:"The Tamatea nights carry a charged, unsettled energy. Emotions can feel bigger than usual. This is not weakness — it is information.",prompt:"What emotion has been sitting just below the surface, waiting to be heard?"},
+  {name:"Tamatea-ā-ngana",eng:"First Quarter",meaning:"Tamatea's capricious night — unpredictable energy",activity:"Avoid travel and fishing; take care with fire",wawata:"Tamatea-ā-ngana is wild and restless. Trying to control everything tonight will exhaust you. Practice letting go of what you cannot direct.",prompt:"Where in your life are you holding on too tightly?"},
+  {name:"Tamatea-aio",eng:"First Quarter",meaning:"Tamatea settles — the storm begins to calm",activity:"Good for planting; calm returns",wawata:"After the charged Tamatea nights, aio brings stillness. The sea of feeling settles. This is a good night to re-centre after difficulty.",prompt:"What practice helps you find stillness when life feels overwhelming?"},
+  {name:"Tamatea-kai-ariki",eng:"Waxing Gibbous",meaning:"Tamatea, devourer of chiefs — power and caution",activity:"Tread carefully; respect authority and limits",wawata:"This phase holds a reminder about power — who wields it, and how. Reflect on your own sense of authority and where you need to hold stronger boundaries.",prompt:"Where do you need to stand more firmly in your own authority?"},
+  {name:"Huna",eng:"Waxing Gibbous",meaning:"Hidden — things are not as they appear tonight",activity:"Pause before acting; things may be concealed",wawata:"Huna asks us to look beneath the surface — of situations, of others, of ourselves. What are you hiding, even from yourself?",prompt:"What truth about yourself have you been reluctant to look at directly?"},
+  {name:"Ari",eng:"Waxing Gibbous",meaning:"The moon becomes clear — things reveal themselves",activity:"Good for planting and fishing; clarity arrives",wawata:"After Huna's concealment, Ari brings things into view. Clarity and openness are available now. Let yourself be seen.",prompt:"What part of yourself are you ready to share more openly with others?"},
+  {name:"Māure",eng:"Waxing Gibbous",meaning:"The moon gleams — energy builds toward fullness",activity:"Good fishing; plant root vegetables",wawata:"Māure hums with growing energy. Creativity and connection are heightened. This is a night for making and relating.",prompt:"What creative project or relationship deserves your energy right now?"},
+  {name:"Māwharu",eng:"Waxing Gibbous",meaning:"The moon grows strong — abundance approaches",activity:"Excellent for crayfish and deep-sea fishing",wawata:"Māwharu brings a sense of abundance and capability. You may feel more effective and connected to others tonight.",prompt:"What are you genuinely grateful for in your life right now?"},
+  {name:"Ōhua",eng:"Waxing Gibbous",meaning:"Abundance — the moon near her peak",activity:"Harvest; gather seafood; plant root crops",wawata:"Ōhua overflows with generosity. This is a night to give as well as receive — to notice the abundance around you and share it.",prompt:"How can you be more generous — with your time, attention, or care — today?"},
+  {name:"Ōturu",eng:"Full Moon",meaning:"The moon stands at her fullest before the peak",activity:"Excellent for all fishing and gathering",wawata:"Ōturu is the breath before the full moon — brimming, luminous, alive. Connections feel electric. Let yourself be fully present with others.",prompt:"Who do you want to be fully present with right now?"},
+  {name:"Rākaunui",eng:"Full Moon",meaning:"The great full moon — peak of the lunar month",activity:"Best time for all activity — fish, plant, gather",wawata:"Rākaunui is Hina at her most radiant. Everything is illuminated — including the parts of yourself you usually keep in shadow. Full moons ask for full honesty.",prompt:"In the full light of the moon, what is one honest truth you need to tell yourself?"},
+  {name:"Rākaumatohi",eng:"Waning Gibbous",meaning:"The solitary tree — moon begins to wane",activity:"Good fishing continues; begin to harvest",wawata:"Standing alone like a solitary tree after the peak. This phase invites you to find strength in your own company — and comfort in solitude.",prompt:"How comfortable are you in your own company? What do you find there?"},
+  {name:"Takirau",eng:"Waning Gibbous",meaning:"The nets are spread — a time to gather",activity:"Fishing very good; gather kūmara",wawata:"Takirau is a night of harvest — of relationships, of work, of experience. What have you cultivated this cycle that is now ready to be gathered?",prompt:"What has grown in your life recently that you haven't yet stopped to appreciate?"},
+  {name:"Ōike",eng:"Waning Gibbous",meaning:"Energy abundant but beginning to ease",activity:"Good fishing; moderate planting",wawata:"The tide of the month turns. Energy remains but begins to soften. A good night to consolidate rather than push forward.",prompt:"What can you complete or wrap up before this cycle closes?"},
+  {name:"Korekore",eng:"Last Quarter",meaning:"The void — energy diminishes, rest approaches",activity:"Light work only; rest and restore",wawata:"Korekore is the great emptying. The void is not frightening — it is necessary. Everything living requires rest. Honour your own need to do less.",prompt:"What are you holding onto that it might be time to put down?"},
+  {name:"Korekore-piri-ki-Tangaroa",eng:"Last Quarter",meaning:"Korekore close to Tangaroa — tides pulse strongly",activity:"The sea is powerful; fish near shore with care",wawata:"Between the void and the sea god's domain, this night carries the pull of deep waters. Trust what you feel.",prompt:"What is your gut telling you that your head has been overriding?"},
+  {name:"Tangaroa-ā-mua",eng:"Waning Crescent",meaning:"Tangaroa's first night — the sea surges",activity:"Excellent fishing — among the best nights",wawata:"Tangaroa, atua of the sea, fills these nights with oceanic energy. Intimacy and the depth of feeling between people are awakened.",prompt:"What does genuine intimacy look and feel like for you?"},
+  {name:"Tangaroa-ā-roto",eng:"Waning Crescent",meaning:"Tangaroa's middle night — abundance from the sea",activity:"Fish, gather kaimoana, plant root vegetables",wawata:"The middle of Tangaroa's reign. Connection runs deep tonight. This is a time for honesty in close relationships.",prompt:"Is there something you need to say to someone close to you that you've been holding back?"},
+  {name:"Tangaroa-kiokio",eng:"Waning Crescent",meaning:"Tangaroa's last night — tide begins to recede",activity:"Good fishing; harvest begins to close",wawata:"Tangaroa's final night. As the tide recedes, we process what the depth brought up. Integration is the work of this night.",prompt:"What has this lunar cycle taught you about yourself or your relationships?"},
+  {name:"Ōtāne",eng:"Waning Crescent",meaning:"The moon thins, light fades inward",activity:"Rest and introspection; avoid major decisions",wawata:"Ōtāne turns the light inward. This is not a night for outward action but for quiet reflection — listening to the quieter parts of yourself.",prompt:"If you slowed down and truly listened to yourself right now, what would you hear?"},
+  {name:"Ōrongonui",eng:"Waning Crescent",meaning:"A quiet waning night — store and preserve",activity:"Preserve food; repair tools; rest",wawata:"Ōrongonui asks us to tend to what sustains us. Rest, nourishment, small repairs — the unglamorous work of keeping ourselves well.",prompt:"What everyday self-care practice have you been neglecting that would make a real difference?"},
+  {name:"Māuri",eng:"Waning Crescent",meaning:"The life force — maintain and restore",activity:"Rest, ceremony, reconnect with whānau",wawata:"Māuri is the life force within all things. Tonight, tend to yours. Ceremony, prayer, stillness, connection with loved ones — these restore the mauri.",prompt:"What activity or person most reliably restores your energy and sense of self?"},
+  {name:"Mutuwhenua",eng:"Waning Crescent",meaning:"The moon touches the earth — nearly gone",activity:"Rest and prepare for the new cycle",wawata:"Mutuwhenua is the moon's farewell embrace of the earth. A night of endings and of gratitude. The cycle is nearly complete.",prompt:"What are you grateful for from this lunar cycle? What will you carry into the next?"},
+  {name:"Whiro",eng:"New Moon",meaning:"The cycle completes — darkness and renewal",activity:"Rest; reflect; do not plant or fish",wawata:"We return to Whiro. The cycle has turned completely. Darkness is not an ending; it is the womb of the next beginning.",prompt:"Who are you now, at the close of this cycle, compared to who you were at its start?"},
+];
+
+// ═══════════════════════════════════════════════════════
+// LUNAR
+// ═══════════════════════════════════════════════════════
+const CYCLE=29.53058867;
+const REF=new Date(Date.UTC(2026,4,15,10,5,0));
+function lunarAge(d){const diff=(d-REF)/86400000;return((diff%CYCLE)+CYCLE)%CYCLE;}
+function phaseIdx(age){return Math.floor((age/CYCLE)*PHASES.length)%PHASES.length;}
+function moonGlyph(age){
+  const p=age/CYCLE;
+  if(p<0.03||p>0.97)return'🌑';if(p<0.22)return'🌒';if(p<0.28)return'🌓';
+  if(p<0.47)return'🌔';if(p<0.53)return'🌕';if(p<0.72)return'🌖';
+  if(p<0.78)return'🌗';return'🌘';
+}
+function findKeyPhases(year,month){
+  const start=new Date(year,month-1,1),end=new Date(year,month+1,0),res=[];
+  let prev=lunarAge(start);
+  for(let t=new Date(start);t<=end;t=new Date(t.getTime()+6*3600*1000)){
+    const age=lunarAge(t);
+    if(prev>27&&age<2)res.push({type:'new',date:new Date(t),glyph:'🌑'});
+    if(prev<14&&age>=14&&age<16)res.push({type:'full',date:new Date(t),glyph:'🌕'});
+    if(prev<7&&age>=7&&age<9)res.push({type:'first',date:new Date(t),glyph:'🌓'});
+    if(prev<22&&age>=22&&age<24)res.push({type:'last',date:new Date(t),glyph:'🌗'});
+    prev=age;
+  }
+  return res;
+}
+
+// ═══════════════════════════════════════════════════════
+// MOON DRAW
+// ═══════════════════════════════════════════════════════
+function drawMoon(canvas,age){
+  const ctx=canvas.getContext('2d');
+  const W=canvas.width,H=canvas.height,cx=W/2,cy=H/2,r=W*0.44;
+  ctx.clearRect(0,0,W,H);
+  const phase=age/CYCLE;
+  ctx.save();ctx.beginPath();ctx.arc(cx,cy,r+1,0,Math.PI*2);ctx.fillStyle='#05080f';ctx.fill();ctx.restore();
+  const g=ctx.createRadialGradient(cx-r*.25,cy-r*.25,r*.05,cx,cy,r);
+  g.addColorStop(0,'#f0f5ff');g.addColorStop(0.45,'#c8d8f0');g.addColorStop(0.8,'#96aac8');g.addColorStop(1,'#506070');
+  ctx.save();ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();ctx.restore();
+  [{x:.15,y:-.2,s:.08},{x:-.28,y:.12,s:.1},{x:.05,y:.3,s:.065},{x:-.12,y:-.38,s:.055},{x:.32,y:.14,s:.06},{x:-.3,y:-.08,s:.045}]
+  .forEach(c=>{ctx.save();ctx.beginPath();ctx.arc(cx+c.x*r,cy+c.y*r,c.s*r,0,Math.PI*2);ctx.fillStyle='rgba(60,80,110,0.22)';ctx.fill();ctx.restore();});
+  ctx.save();ctx.globalCompositeOperation='source-atop';ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
+  const k=Math.cos(Math.PI*2*phase);
+  if(phase<0.5){ctx.beginPath();ctx.arc(cx,cy,r,Math.PI/2,-Math.PI/2,false);ctx.bezierCurveTo(cx-k*r,cy-r,cx-k*r,cy+r,cx,cy+r);ctx.closePath();}
+  else{ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,Math.PI/2,false);ctx.bezierCurveTo(cx-k*r,cy+r,cx-k*r,cy-r,cx,cy-r);ctx.closePath();}
+  ctx.fillStyle='rgba(5,8,15,0.94)';ctx.fill();ctx.restore();
+  const eg=ctx.createRadialGradient(cx,cy,r*.75,cx,cy,r*1.02);
+  eg.addColorStop(0,'transparent');eg.addColorStop(1,'rgba(100,170,220,0.2)');
+  ctx.save();ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fillStyle=eg;ctx.fill();ctx.restore();
+}
+
+// ═══════════════════════════════════════════════════════
+// STARS
+// ═══════════════════════════════════════════════════════
+const starsEl=document.getElementById('stars');
+for(let i=0;i<110;i++){
+  const s=document.createElement('div');s.className='star';
+  const sz=Math.random()*1.7+0.3;
+  s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;width:${sz}px;height:${sz}px;--d:${2+Math.random()*4}s;--delay:${-Math.random()*7}s;--a1:${.03+Math.random()*.1};--a2:${.4+Math.random()*.6};`;
+  starsEl.appendChild(s);
+}
+
+// ═══════════════════════════════════════════════════════
+// SPLASH
+// ═══════════════════════════════════════════════════════
+function enterApp(){
+  const now=new Date();
+  drawMoon(document.getElementById('splashCanvas'),lunarAge(now));
+  document.getElementById('splash').classList.add('fade-out');
+  setTimeout(()=>{
+    document.getElementById('splash').style.display='none';
+    document.getElementById('tabbar').style.display='flex';
+  },800);
+  update();
+}
+// Draw splash moon immediately
+(function(){
+  const sc=document.getElementById('splashCanvas');
+  drawMoon(sc,lunarAge(new Date()));
+})();
+
+// ═══════════════════════════════════════════════════════
+// NAMES
+// ═══════════════════════════════════════════════════════
+const DAYS=['Rātapu','Rāhina','Rātū','Rāapa','Rāpare','Rāmere','Rāhoroi'];
+const MONTHS=['Kohitātea','Huitanguru','Poutūterangi','Paenga-whāwhā','Haratua','Pipiri','Hōngongoi','Here-turi-kōkā','Mahuru','Whiringa-ā-nuku','Whiringa-ā-rangi','Hakihea'];
+const MONTH_EN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+// ═══════════════════════════════════════════════════════
+// TABS
+// ═══════════════════════════════════════════════════════
+function showTab(id){
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['clock','calendar','about'][i]===id));
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id==='page-'+id));
+  if(id==='calendar')renderCalendar();
+}
+
+// ═══════════════════════════════════════════════════════
+// CLOCK
+// ═══════════════════════════════════════════════════════
+function pad(n){return String(n).padStart(2,'0');}
+function update(){
+  const now=new Date();
+  document.getElementById('timeDisplay').textContent=`${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  document.getElementById('dateDisplay').textContent=`${DAYS[now.getDay()]}, ${now.getDate()} ${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
+  const age=lunarAge(now),idx=phaseIdx(age),pd=PHASES[idx],pct=(age/CYCLE)*100;
+  document.getElementById('phaseName').textContent=pd.name;
+  document.getElementById('phaseEng').textContent=pd.eng;
+  document.getElementById('phaseNum').textContent=`Pō ${idx+1} of 29 · Night ${idx+1}`;
+  document.getElementById('phaseMeaning').textContent=pd.meaning;
+  document.getElementById('phaseActivity').textContent=pd.activity;
+  document.getElementById('wawataRef').textContent=pd.wawata;
+  document.getElementById('wawataPrompt').textContent=pd.prompt;
+  document.getElementById('cycleFill').style.width=pct.toFixed(1)+'%';
+  document.getElementById('cyclePos').textContent=`Pō ${idx+1}`;
+  drawMoon(document.getElementById('moonCanvas'),age);
+}
+setInterval(update,1000);
+
+// ═══════════════════════════════════════════════════════
+// APPOINTMENTS
+// ═══════════════════════════════════════════════════════
+const COLORS=['#6aaee0','#deb96a','#76d49a','#b49ae0','#e07878','#e0d07a','#7ab6e0','#e078b6'];
+function loadAppts(){try{return JSON.parse(localStorage.getItem('mara_appts')||'{}');}catch{return{};}}
+function saveAppts(d){localStorage.setItem('mara_appts',JSON.stringify(d));}
+function apptKey(y,m,d){return`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;}
+
+let appts=loadAppts(),editId=null,activeDay=null;
+
+function buildColors(sel){
+  const cr=document.getElementById('colorRow');cr.innerHTML='';
+  COLORS.forEach(c=>{
+    const sw=document.createElement('div');sw.className='swatch'+(c===sel?' on':'');
+    sw.style.background=c;
+    sw.onclick=()=>{cr.querySelectorAll('.swatch').forEach(s=>s.classList.remove('on'));sw.classList.add('on');};
+    cr.appendChild(sw);
+  });
+}
+function openModal(id=null){
+  editId=id;
+  document.getElementById('overlay').classList.remove('hidden');
+  document.getElementById('modalTitle').textContent=id?'Edit Appointment':'Add Appointment';
+  document.getElementById('btnDel').style.display=id?'block':'none';
+  if(id&&activeDay){
+    const k=apptKey(activeDay.y,activeDay.m,activeDay.d);
+    const a=(appts[k]||[]).find(x=>x.id===id);
+    if(a){document.getElementById('mTitle').value=a.title||'';document.getElementById('mTime').value=a.time||'';document.getElementById('mNotes').value=a.notes||'';buildColors(a.color||COLORS[0]);return;}
+  }
+  document.getElementById('mTitle').value='';document.getElementById('mTime').value='';document.getElementById('mNotes').value='';buildColors(COLORS[0]);
+}
+function closeModal(){document.getElementById('overlay').classList.add('hidden');editId=null;}
+document.getElementById('overlay').addEventListener('click',e=>{if(e.target===document.getElementById('overlay'))closeModal();});
+function saveAppt(){
+  const title=document.getElementById('mTitle').value.trim();
+  if(!title){document.getElementById('mTitle').focus();return;}
+  const time=document.getElementById('mTime').value;
+  const notes=document.getElementById('mNotes').value.trim();
+  const color=document.querySelector('.swatch.on')?.style.background||COLORS[0];
+  if(!activeDay)return;
+  const k=apptKey(activeDay.y,activeDay.m,activeDay.d);
+  if(!appts[k])appts[k]=[];
+  if(editId){const i=appts[k].findIndex(x=>x.id===editId);if(i>=0)appts[k][i]={...appts[k][i],title,time,notes,color};}
+  else appts[k].push({id:'a'+Date.now(),title,time,notes,color});
+  appts[k].sort((a,b)=>(a.time||'99:99').localeCompare(b.time||'99:99'));
+  saveAppts(appts);closeModal();renderCalendar();renderAppts();
+}
+function deleteAppt(){
+  if(!editId||!activeDay)return;
+  const k=apptKey(activeDay.y,activeDay.m,activeDay.d);
+  appts[k]=(appts[k]||[]).filter(x=>x.id!==editId);
+  if(!appts[k].length)delete appts[k];
+  saveAppts(appts);closeModal();renderCalendar();renderAppts();
+}
+function renderAppts(){
+  if(!activeDay)return;
+  const k=apptKey(activeDay.y,activeDay.m,activeDay.d);
+  const list=appts[k]||[],el=document.getElementById('apptList');
+  el.innerHTML='';
+  if(!list.length){el.innerHTML='<div class="appt-empty">No appointments — tap + Add to create one</div>';return;}
+  list.forEach(a=>{
+    const item=document.createElement('div');item.className='appt-item';
+    item.innerHTML=`<div class="appt-bar" style="background:${a.color||COLORS[0]}"></div><div class="appt-info">${a.time?`<div class="appt-time-text">${fmtTime(a.time)}</div>`:''}<div class="appt-name-text">${esc(a.title)}</div>${a.notes?`<div class="appt-note-text">${esc(a.notes)}</div>`:''}</div><button class="appt-edit-btn" onclick="openModal('${a.id}')">✎</button>`;
+    el.appendChild(item);
+  });
+}
+function fmtTime(t){if(!t)return'';const[h,m]=t.split(':').map(Number);return`${h%12||12}:${String(m).padStart(2,'0')} ${h>=12?'pm':'am'}`;}
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ═══════════════════════════════════════════════════════
+// CALENDAR
+// ═══════════════════════════════════════════════════════
+let calYear=new Date().getFullYear(),calMonth=new Date().getMonth(),selDateStr=null;
+function changeMonth(d){calMonth+=d;if(calMonth>11){calMonth=0;calYear++;}if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
+
+function renderCalendar(){
+  const today=new Date(),todayStr=`${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+  document.getElementById('calMonth').textContent=`${MONTH_EN[calMonth]} ${calYear}`;
+  document.getElementById('calMonthMaori').textContent=MONTHS[calMonth];
+  const kp=findKeyPhases(calYear,calMonth+1),km={};
+  kp.forEach(k=>{const d=k.date;km[`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`]=k.type;});
+  const grid=document.getElementById('calGrid');grid.innerHTML='';
+  const first=new Date(calYear,calMonth,1).getDay(),dim=new Date(calYear,calMonth+1,0).getDate();
+  for(let i=0;i<first;i++){const c=document.createElement('div');c.className='cal-cell empty';grid.appendChild(c);}
+  for(let d=1;d<=dim;d++){
+    const date=new Date(calYear,calMonth,d,12,0,0),dStr=`${calYear}-${calMonth}-${d}`;
+    const age=lunarAge(date),idx=phaseIdx(age),ph=PHASES[idx],g=moonGlyph(age),kt=km[dStr];
+    const dk=apptKey(calYear,calMonth,d),da=appts[dk]||[];
+    const cell=document.createElement('div');cell.className='cal-cell';
+    if(dStr===todayStr)cell.classList.add('today');
+    if(dStr===selDateStr)cell.classList.add('selected');
+    if(kt==='new')cell.classList.add('new-moon');
+    if(kt==='full')cell.classList.add('full-moon');
+    let dots=da.length?`<div class="cal-dots">${da.slice(0,4).map(a=>`<div class="cal-dot" style="background:${a.color||COLORS[0]}"></div>`).join('')}</div>`:'';
+    cell.innerHTML=`<div class="cal-day-num">${d}</div><div class="cal-glyph">${g}</div><div class="cal-name">${ph.name}</div>${dots}`;
+    cell.addEventListener('click',()=>selectDay(dStr,d,date,age,idx,ph));
+    grid.appendChild(cell);
+  }
+  renderUpcoming();
+}
+
+function selectDay(dStr,d,date,age,idx,ph){
+  selDateStr=dStr;activeDay={y:calYear,m:calMonth,d};
+  renderCalendar();
+  const det=document.getElementById('dayDetail');det.style.display='block';
+  document.getElementById('detailDateLabel').textContent=`${DAYS[date.getDay()]}, ${d} ${MONTHS[calMonth]} ${calYear}`;
+  document.getElementById('detailName').textContent=ph.name;
+  document.getElementById('detailEng').textContent=`Pō ${idx+1} · ${ph.eng}`;
+  document.getElementById('detailMeaning').textContent=ph.meaning;
+  document.getElementById('detailActivity').textContent=ph.activity;
+  renderAppts();
+  det.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function renderUpcoming(){
+  const now=new Date(),all=[];
+  for(let m=0;m<3;m++){let yr=calYear,mo=calMonth+1+m;if(mo>12){mo-=12;yr++;}findKeyPhases(yr,mo).forEach(kp=>{if(kp.date>=now)all.push(kp);});}
+  all.sort((a,b)=>a.date-b.date);
+  const seen=new Set(),unique=all.filter(kp=>{const k=`${kp.type}-${kp.date.toDateString()}`;if(seen.has(k))return false;seen.add(k);return true;}).slice(0,8);
+  const list=document.getElementById('upcomingList');list.innerHTML='';
+  unique.forEach(kp=>{
+    const d=kp.date,daysAway=Math.round((d-now)/86400000);
+    const label=daysAway===0?'Today':daysAway===1?'Tomorrow':`In ${daysAway} days`;
+    const item=document.createElement('div');
+    item.className='upcoming-item'+(kp.type==='new'?' is-new':kp.type==='full'?' is-full':'');
+    item.innerHTML=`<div class="upcoming-glyph">${kp.glyph}</div><div class="upcoming-info"><div class="upcoming-phase">${kp.type==='new'?'Whiro — New Moon':kp.type==='full'?'Rākaunui — Full Moon':kp.type==='first'?'Tamatea — First Quarter':'Korekore — Last Quarter'}</div><div class="upcoming-date-text">${DAYS[d.getDay()]}, ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}</div></div><div class="upcoming-away">${label}</div>`;
+    list.appendChild(item);
+  });
+}
+</script>
+</body>
+</html>
